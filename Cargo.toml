@@ -3,9 +3,6 @@ name = "bsq-rs"
 version = "0.1.0"
 edition = "2021"
 
-[dev-dependencies]
-criterion = "0.5.1"
-
 [[bench]]
 name = "benchmark"
 harness = false
@@ -18,9 +15,11 @@ lto = "fat"
 strip = true
 overflow-checks = false
 
-[dependencies]
-memchr = "2.7.4"
+[profile.dev]
+debug = 2
+opt-level = 0
+debug-assertions = true
+split-debuginfo = "unpacked"
 
-[target.x86_64-unknown-linux-musl]
-linker = "musl-gcc"
-rustflags = ["-C", "target-feature=+crt-static"]
+[dependencies]
+memmap = "0.7.0"

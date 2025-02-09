@@ -1,26 +1,20 @@
-use std::io::Read;
+use memmap::{MmapMut, MmapOptions};
 use std::fs::File;
-use memchr::memchr;
+
+pub const MAP_SIZE: usize = 10_000;
 
 #[allow(unused)]
 
-pub fn file_to_string(mut buffer: &mut [u8], filename: &str) -> (usize, usize, usize) {
-    let size = File::open(filename).unwrap().read(&mut buffer).unwrap();
-    
-    let first_newline_index = memchr(b'\n', &buffer[..size]).unwrap();
-    let nb_lines: usize = std::str::from_utf8(&buffer[..first_newline_index])
-        .unwrap()
-        .parse()
+pub fn file_to_string(filename: &str) -> MmapMut {
+    let file = File::options()
+        .read(true)
+        .write(true)
+        .open(filename)
         .unwrap();
-    
-    let start_index = first_newline_index + 1;
-    let cols = memchr(b'\n', &buffer[start_index..size])
-        .map(|idx| idx)
-        .unwrap();
-    
-    (nb_lines, cols, first_newline_index)
-}
+    let mmap = unsafe { MmapOptions::new().map_mut(&file).unwrap() };
 
+    mmap
+}
 
 #[derive(Debug)]
 pub struct Square {
@@ -28,41 +22,55 @@ pub struct Square {
     pub pos: (usize, usize),
 }
 
-pub fn get_biggest_square(grid: &str, rows: usize, cols: usize) -> Option<Square> {
-    let mut dp = vec![0u8; rows * cols];
-    let mut max_size = 0;
-    let mut max_pos = (0, 0);
-    let bytes = grid.as_bytes();
+impl Square {
+    fn new() -> Self {
+        Square {
+            size: 0,
+            pos: (0, 0),
+        }
+    }
+}
 
-    for i in 0..rows {
-        for j in 0..cols {
-            let idx = i * cols + j;
-            if bytes[idx] == b'.' {
-                if i == 0 || j == 0 {
-                    dp[idx] = 1;
+
+pub fn get_biggest_square(grid: &[u8], rows: usize, cols: usize) -> Option<Square> {
+    let mut best = Square::new();
+    let mut prev_row = [0; MAP_SIZE];
+    let mut curr_row = [0; MAP_SIZE];
+
+    let row_length = cols + 1;
+    let mut row_start = 0;
+
+    for y in 0..rows {
+        for x in 0..cols {
+            let pos = row_start + x;
+
+            if grid[pos] == b'o' {
+                curr_row[x] = 0;
+            } else {
+                curr_row[x] = if y == 0 || x == 0 {
+                    1
                 } else {
-                    let left = dp[idx - 1];
-                    let top = dp[idx - cols];
-                    let diagonal = dp[idx - cols - 1];
-                    dp[idx] = left.min(top).min(diagonal) + 1;
-                }
+                    1 + prev_row[x - 1].min(prev_row[x]).min(curr_row[x - 1])
+                };
 
-                if dp[idx] > max_size {
-                    max_size = dp[idx];
-                    max_pos = (i, j);
+                if curr_row[x] > best.size {
+                    best.size = curr_row[x];
+                    best.pos = (y, x);
                 }
             }
         }
+        row_start += row_length;
+        std::mem::swap(&mut prev_row, &mut curr_row);
     }
 
-    (max_size > 0).then(|| Square {
-        size: max_size as usize,
-        pos: match max_pos {
-            (pos_x, pos_y) => (
-                pos_x - (max_size as usize - 1),
-                pos_y - (max_size as usize - 1),
+    (best.size > 0).then(|| {
+        best.pos = match best.size {
+            max => (
+                best.pos.0 - (max - 1),
+                best.pos.1 - (max - 1),
             ),
-        },
+        };
+        best
     })
 }
 
