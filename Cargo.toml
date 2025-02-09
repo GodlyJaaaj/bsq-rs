@@ -14,6 +14,13 @@ harness = false
 opt-level = 3
 codegen-units = 1
 panic = "abort"
-lto = true
+lto = "fat"
+strip = true
+overflow-checks = false
+
 [dependencies]
 memchr = "2.7.4"
+
+[target.x86_64-unknown-linux-musl]
+linker = "musl-gcc"
+rustflags = ["-C", "target-feature=+crt-static"]
