@@ -9,3 +9,9 @@ criterion = "0.5.1"
 [[bench]]
 name = "benchmark"
 harness = false
+
+[profile.release]
+opt-level = 3
+codegen-units = 1
+panic = "abort"
+lto = true
