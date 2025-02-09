@@ -1,5 +1,5 @@
-use std::fs;
-use std::io::Error;
+use std::fs::File;
+use std::io::{BufRead, BufReader, Error, Read};
 
 #[derive(Debug)]
 pub enum ParsingError {
@@ -10,35 +10,46 @@ pub enum ParsingError {
 }
 
 pub fn file_to_string(filename: &str) -> Result<(String, usize, usize), ParsingError> {
-    let content = fs::read_to_string(filename).map_err(ParsingError::CouldNotParse)?;
-    let mut lines = content.lines();
+    let file = File::open(filename).unwrap();
+    let mut reader = BufReader::new(file);
 
-    let nb_lines = lines.next().ok_or(ParsingError::NotEnoughLines)?;
-    let nb_lines: u64 = nb_lines.parse().map_err(|_| ParsingError::InvalidNb)?;
+    let mut first_line = String::new();
+    reader.read_line(&mut first_line).unwrap();
+    let nb_lines: usize = first_line[0..first_line.len() - 1].parse().unwrap();
 
-    let grid_lines: Vec<&str> = lines.collect();
+    const MAX_SIZE: usize = 100010000;
+    let mut buffer = [0u8; MAX_SIZE];
+    let content = reader.read_exact(&mut buffer);
+    println!("content: {:?}", &buffer[0..10]);
 
-    if grid_lines.len() as u64 != nb_lines {
-        return Err(ParsingError::NotEnoughLines);
-    }
-
-    let cols = grid_lines
-        .first()
-        .map(|s| s.len() as u64)
-        .ok_or(ParsingError::NotEnoughLines)?;
-
-    for line in &grid_lines {
-        if line.len() as u64 != cols {
-            return Err(ParsingError::LineSizeNotMatching);
-        }
-    }
-
-    let mut grid = String::with_capacity((nb_lines * cols) as usize);
-    for line in grid_lines {
-        grid.push_str(line);
-    }
-
-    Ok((grid, nb_lines as usize, cols as usize))
+    //let mut lines = content.lines();
+    //
+    //let nb_lines = lines.next().ok_or(ParsingError::NotEnoughLines)?;
+    //let nb_lines: u64 = nb_lines.parse().map_err(|_| ParsingError::InvalidNb)?;
+    //
+    //let grid_lines: Vec<&str> = lines.collect();
+    //
+    //if grid_lines.len() as u64 != nb_lines {
+    //    return Err(ParsingError::NotEnoughLines);
+    //}
+    //
+    //let cols = grid_lines
+    //    .first()
+    //    .map(|s| s.len() as u64)
+    //    .ok_or(ParsingError::NotEnoughLines)?;
+    //
+    //for line in &grid_lines {
+    //    if line.len() as u64 != cols {
+    //        return Err(ParsingError::LineSizeNotMatching);
+    //    }
+    //}
+    //
+    //let mut grid = String::with_capacity((nb_lines * cols) as usize);
+    //for line in grid_lines {
+    //    grid.push_str(line);
+    //}
+    //
+    Ok(("0usize".to_string(), 0, 0))
 }
 
 #[derive(Debug)]

@@ -30,10 +30,20 @@ fn benchmark_find_largest_square(c: &mut Criterion) {
     });
 }
 
+fn benchmark_preliminaries(c: &mut Criterion) {
+    let filename = "10000_10000_self_generated".to_string();
+
+    c.bench_function("test-preli-1", |b| {
+        b.iter(|| {
+            file_to_string(&filename).unwrap();
+        })
+    });
+}
+
 criterion_group!(
     name = benches;
-    config = Criterion::default().sample_size(100);
-    targets = benchmark_find_largest_square
+    config = Criterion::default().sample_size(1000);
+    targets = benchmark_find_largest_square, benchmark_preliminaries
 );
 
 criterion_main!(benches);
