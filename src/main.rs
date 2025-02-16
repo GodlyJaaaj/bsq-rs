@@ -1,4 +1,4 @@
-use bsq_rs::{file_to_string, get_biggest_square, MAP_SIZE};
+use bsq_rs::{file_to_string, get_biggest_square, replace_and_display_square, MAP_SIZE};
 use std::env;
 use std::process::exit;
 
@@ -13,11 +13,5 @@ fn main() {
         exit(1);
     };
 
-    println!("{:?}", &square);
-
-    //let stdout = io::stdout();
-    //let mut handle = stdout.lock();
-    //handle.write_all(&map_view).unwrap();
-
-    //replace_and_display_square(&mut grid, rows, cols, &square);
+    replace_and_display_square(map_view, MAP_SIZE, &square);
 }

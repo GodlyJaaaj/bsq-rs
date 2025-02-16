@@ -1,5 +1,7 @@
 use memmap::{MmapMut, MmapOptions};
 use std::fs::File;
+use std::io;
+use std::io::Write;
 
 pub const MAP_SIZE: usize = 10_000;
 
@@ -74,20 +76,18 @@ pub fn get_biggest_square(grid: &[u8], rows: usize, cols: usize) -> Option<Squar
     })
 }
 
-pub fn replace_and_display_square(grid: &mut String, rows: usize, cols: usize, square: &Square) {
+pub fn replace_and_display_square(grid: &mut [u8], map_size: usize, square: &Square) {
     let (start_row, start_col) = square.pos;
     let size = square.size;
 
     for i in start_row..start_row + size {
-        let start_idx = i * cols + start_col;
-        let end_idx = start_idx + size;
-
-        grid.replace_range(start_idx..end_idx, &"x".repeat(size));
+        let start_idx = i * (map_size + 1) + start_col;
+        for j in 0..size {
+            grid[start_idx + j] = b'X';
+        }
     }
 
-    for i in 0..rows {
-        let start_idx = i * cols;
-        let end_idx = start_idx + cols;
-        println!("{}", &grid[start_idx..end_idx]);
-    }
+    let stdout = io::stdout();
+    let mut handle = stdout.lock();
+    handle.write_all(&grid).unwrap();
 }
