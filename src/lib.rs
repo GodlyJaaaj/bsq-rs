@@ -13,7 +13,7 @@ pub fn file_to_string(filename: &str) -> MmapMut {
         .write(true)
         .open(filename)
         .unwrap();
-    let mmap = unsafe { MmapOptions::new().map_mut(&file).unwrap() };
+    let mmap = unsafe { MmapOptions::new().map_copy(&file).unwrap() };
 
     mmap
 }
