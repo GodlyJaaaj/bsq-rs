@@ -83,7 +83,7 @@ pub fn replace_and_display_square(grid: &mut [u8], map_size: usize, square: &Squ
     for i in start_row..start_row + size {
         let start_idx = i * (map_size + 1) + start_col;
         for j in 0..size {
-            grid[start_idx + j] = b'X';
+            grid[start_idx + j] = b'x';
         }
     }
 
