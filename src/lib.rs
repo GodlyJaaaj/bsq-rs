@@ -5,8 +5,6 @@ use std::io::Write;
 
 pub const MAP_SIZE: usize = 10_000;
 
-#[allow(unused)]
-
 pub fn file_to_string(filename: &str) -> MmapMut {
     let file = File::options()
         .read(true)
